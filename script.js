@@ -1,8 +1,10 @@
 let numProcesses = 0;
 let processes = [];
+let selectedAlgorithm = 'fcfs';
 
 function setupProcesses() {
     const numInput = document.getElementById("numProcesses");
+    const algorithmSelect = document.getElementById("algorithm");
     const num = parseInt(numInput.value);
 
     // input validation
@@ -13,6 +15,7 @@ function setupProcesses() {
 
     clearError("numProcesses", "numProcessesError");
     numProcesses = num;
+    selectedAlgorithm = algorithmSelect.value;
 
     // create process input forms
     const processInputs = document.getElementById("processInputs");
@@ -135,6 +138,19 @@ function calculateScheduling() {
         });
     }
 
+    // calculate scheduling based on selected algorithm
+    if (selectedAlgorithm === 'fcfs') {
+        calculateFCFS();
+    } else if (selectedAlgorithm === 'sjf') {
+        calculateSJF();
+    }
+
+    // display results
+    displayResults();
+}
+
+// FCFS (First Come First Serve) scheduling algorithm
+function calculateFCFS() {
     // sort by arrival time for FCFS scheduling
     processes.sort((a, b) => a.at - b.at);
 
@@ -142,7 +158,6 @@ function calculateScheduling() {
     let currentTime = 0;
 
     for (let i = 0; i < processes.length; i++) {
-
         // if current time is less than arrival time, wait
         if (currentTime < processes[i].at) {
             currentTime = processes[i].at;
@@ -150,17 +165,64 @@ function calculateScheduling() {
 
         // set completion time
         processes[i].ct = currentTime + processes[i].bt;
-        
+
         // update current time
         currentTime = processes[i].ct;
-        
+
         // calculate turnaround time and waiting time
         processes[i].tat = processes[i].ct - processes[i].at;
-        processes[i].wt = processes[i].tat - processes[i].bt;  
+        processes[i].wt = processes[i].tat - processes[i].bt;
     }
+}
 
-    // display results
-    displayResults();
+// SJF (Shortest Job First) scheduling algorithm
+function calculateSJF() {
+    // create arrays to track which processes are completed
+    let completed = new Array(processes.length).fill(false);
+    let currentTime = 0;
+    let completedCount = 0;
+
+    // continue until all processes are completed
+    while (completedCount < processes.length) {
+        let shortestIndex = -1;
+        let shortestBurstTime = Infinity;
+
+        // find the process with shortest burst time among available processes
+        for (let i = 0; i < processes.length; i++) {
+            // check if process has arrived and is not completed
+            if (!completed[i] && processes[i].at <= currentTime) {
+                // if this process has shorter burst time, select it
+                if (processes[i].bt < shortestBurstTime) {
+                    shortestBurstTime = processes[i].bt;
+                    shortestIndex = i;
+                }
+            }
+        }
+
+        // if no process is available, find the next arrival time
+        if (shortestIndex === -1) {
+            let nextArrivalTime = Infinity;
+            for (let i = 0; i < processes.length; i++) {
+                if (!completed[i] && processes[i].at < nextArrivalTime) {
+                    nextArrivalTime = processes[i].at;
+                }
+            }
+            currentTime = nextArrivalTime;
+            continue; // go back to find available process
+        }
+
+        // execute the selected process
+        processes[shortestIndex].ct = currentTime + processes[shortestIndex].bt;
+        currentTime = processes[shortestIndex].ct;
+
+        // calculate turnaround time and waiting time
+        processes[shortestIndex].tat = processes[shortestIndex].ct - processes[shortestIndex].at;
+        processes[shortestIndex].wt = processes[shortestIndex].tat - processes[shortestIndex].bt;
+
+        // mark process as completed
+        completed[shortestIndex] = true;
+        completedCount++;
+    }
 }
 
 
@@ -168,6 +230,10 @@ function calculateScheduling() {
 function displayResults() {
     const resultsBody = document.getElementById("resultsBody");
     resultsBody.innerHTML = "";
+
+    // update algorithm display
+    const algorithmUsed = document.getElementById("algorithmUsed");
+    algorithmUsed.textContent = selectedAlgorithm === 'fcfs' ? 'First Come First Serve (FCFS)' : 'Shortest Job First (SJF)';
 
     let totalWT = 0,
         totalTAT = 0;

@@ -15,9 +15,17 @@
 
       <div class="step">
 
-        <h2 class="step-title">Step 1: Enter Number of Processes</h2>
+        <h2 class="step-title">Step 1: Select Algorithm and Number of Processes</h2>
 
         <div class="step-content">
+
+          <div class="form-group">
+            <label for="algorithm">Scheduling Algorithm:</label>
+            <select id="algorithm">
+              <option value="fcfs">First Come First Serve (FCFS)</option>
+              <option value="sjf">Shortest Job First (SJF)</option>
+            </select>
+          </div>
 
           <div class="form-group">
 
@@ -25,7 +33,7 @@
 
             <input type="number" id="numProcesses" min="3" max="10" placeholder="Enter number between 3-10"
             />
-            
+
             <div class="error-message" id="numProcessesError">
               Please enter a valid number between 3 and 10
             </div>
@@ -48,6 +56,9 @@
       <div class="results" id="results">
 
         <h2>CPU Scheduling Results</h2>
+        <div class="algorithm-info">
+          <strong>Algorithm Used: </strong><span id="algorithmUsed">FCFS</span>
+        </div>
 
         <table class="results-table">
           <thead>

@@ -43,6 +43,10 @@ label {
     color: #4a5568;
     font-size: 0.9em;
 }
+
+.form-group {
+    margin-bottom: 25px;
+}
         
 .step {
     border: 1px solid #e2e8f0;
@@ -72,7 +76,7 @@ label {
 }
 
 
-input {
+input, select {
     width: 100%;
     padding: 12px;
     border: 1px solid #cbd5e0;
@@ -84,11 +88,15 @@ input {
     background-color: #f7fafc;
 }
 
-input:focus {
+input:focus, select:focus {
     outline: none;
     border-color: #4299e1;
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
     background-color: #ffffff;
+}
+
+select:focus {
+    border-color: #4299e1;  
 }
 
 .error {
@@ -246,4 +254,15 @@ button:disabled {
     font-size: 2.2em;
     font-weight: 700;
     color: #2d3748;
+}
+
+.algorithm-info {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #e6f3ff;
+    border-radius: 6px;
+    border: 1px solid #b3d9ff;
+    color: #2d3748;
+    font-size: 1em;
 }
