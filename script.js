@@ -105,6 +105,21 @@ function validateInputs() {
         if (pid) pids.push(pid);
     }
 
+    // check for duplicate Arrival Times
+    const arrivalTimes = [];
+
+    for (let i = 1; i <= numProcesses; i++) {
+        const at = document.getElementById(`at${i}`).value;
+        const atValue = parseInt(at);
+        if (at && !isNaN(atValue) && arrivalTimes.includes(atValue)) {
+            showError(`at${i}`, `at${i}Error`);
+            document.getElementById(`at${i}Error`).textContent =
+                "Arrival Time must be unique";
+            allValid = false;
+        }
+        if (at && !isNaN(atValue)) arrivalTimes.push(atValue);
+    }
+
     // enable or disable the calculate button based on validation
     document.getElementById("calculate-button").disabled = !allValid;
 }
