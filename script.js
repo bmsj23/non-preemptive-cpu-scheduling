@@ -277,6 +277,9 @@ function displayResults() {
     document.getElementById("avgWT").textContent = avgWT;
     document.getElementById("avgTAT").textContent = avgTAT;
 
+    // create detailed calculations section
+    displayDetailedCalculations();
+
     document.getElementById("results").style.display = "block";
 
     // console output for verification
@@ -286,6 +289,102 @@ function displayResults() {
     });
     console.log(`\nAverage Waiting Time = ${avgWT}`);
     console.log(`Average Turnaround Time = ${avgTAT}`);
+}
+
+// function to display detailed calculations
+function displayDetailedCalculations() {
+    // check if calculations section already exists, if not create it
+    let calculationsSection = document.getElementById("detailedCalculations");
+    if (!calculationsSection) {
+        calculationsSection = document.createElement("div");
+        calculationsSection.id = "detailedCalculations";
+        calculationsSection.className = "calculations-section";
+        
+        // insert after results table but before averages
+        const averagesSection = document.querySelector(".averages");
+        averagesSection.parentNode.insertBefore(calculationsSection, averagesSection);
+    }
+    
+    // clear existing content
+    calculationsSection.innerHTML = "";
+    
+    // create title
+    const title = document.createElement("h3");
+    title.textContent = "Detailed Calculations";
+    title.className = "calculations-title";
+    calculationsSection.appendChild(title);
+    
+    // sort processes by Process ID 
+    const sortedProcesses = [...processes].sort((a, b) => {
+        // extract numeric part from process ID for proper sorting
+        const getNumFromPid = (pid) => {
+            const match = pid.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+        };
+        return getNumFromPid(a.pid) - getNumFromPid(b.pid);
+    });
+    
+    // Waiting Time calculations
+    const wtSection = document.createElement("div");
+    wtSection.className = "calculation-group";
+    
+    const wtTitle = document.createElement("h4");
+    wtTitle.textContent = "Waiting Time = Start Time - Arrival Time";
+    wtSection.appendChild(wtTitle);
+    
+    sortedProcesses.forEach((process) => {
+        const wtCalc = document.createElement("div");
+        wtCalc.className = "calculation-line";
+        // calculate start time: Start Time = Completion Time - Burst Time
+        const startTime = process.ct - process.bt;
+        wtCalc.innerHTML = `${process.pid} = ${startTime} - ${process.at} = <strong>${process.wt}</strong>`;
+        wtSection.appendChild(wtCalc);
+    });
+    
+    calculationsSection.appendChild(wtSection);
+    
+    // Turnaround Time calculations  
+    const tatSection = document.createElement("div");
+    tatSection.className = "calculation-group";
+    
+    const tatTitle = document.createElement("h4");
+    tatTitle.textContent = "Turnaround Time = Completion Time - Arrival Time";
+    tatSection.appendChild(tatTitle);
+    
+    sortedProcesses.forEach((process) => {
+        const tatCalc = document.createElement("div");
+        tatCalc.className = "calculation-line";
+        tatCalc.innerHTML = `${process.pid} = ${process.ct} - ${process.at} = <strong>${process.tat}</strong>`;
+        tatSection.appendChild(tatCalc);
+    });
+    
+    calculationsSection.appendChild(tatSection);
+    
+    // average calculations
+    const avgSection = document.createElement("div");
+    avgSection.className = "calculation-group";
+    
+    const avgTitle = document.createElement("h4");
+    avgTitle.textContent = "Average Calculations";
+    avgSection.appendChild(avgTitle);
+    
+    // Average Waiting Time calculation
+    const totalWT = processes.reduce((sum, process) => sum + process.wt, 0);
+    const avgWTCalc = document.createElement("div");
+    avgWTCalc.className = "calculation-line";
+    const wtValues = processes.map(p => p.wt).join(" + ");
+    avgWTCalc.innerHTML = `Average Waiting Time = (${wtValues}) ÷ ${numProcesses} = ${totalWT} ÷ ${numProcesses} = <strong>${(totalWT / numProcesses).toFixed(1)}</strong>`;
+    avgSection.appendChild(avgWTCalc);
+    
+    // Average Turnaround Time calculation
+    const totalTAT = processes.reduce((sum, process) => sum + process.tat, 0);
+    const avgTATCalc = document.createElement("div");
+    avgTATCalc.className = "calculation-line";
+    const tatValues = processes.map(p => p.tat).join(" + ");
+    avgTATCalc.innerHTML = `Average Turnaround Time = (${tatValues}) ÷ ${numProcesses} = ${totalTAT} ÷ ${numProcesses} = <strong>${(totalTAT / numProcesses).toFixed(1)}</strong>`;
+    avgSection.appendChild(avgTATCalc);
+    
+    calculationsSection.appendChild(avgSection);
 }
 
 // function to reset the form and results
