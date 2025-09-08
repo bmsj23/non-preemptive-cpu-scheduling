@@ -207,7 +207,9 @@ function calculateSJF() {
             // check if process has arrived and is not completed
             if (!completed[i] && processes[i].at <= currentTime) {
                 // if this process has shorter burst time, select it
-                if (processes[i].bt < shortestBurstTime) {
+                // If burst times are equal, select the one that arrived first (FCFS tie-breaking)
+                if (processes[i].bt < shortestBurstTime || 
+                   (processes[i].bt === shortestBurstTime && shortestIndex !== -1 && processes[i].at < processes[shortestIndex].at)) {
                     shortestBurstTime = processes[i].bt;
                     shortestIndex = i;
                 }
