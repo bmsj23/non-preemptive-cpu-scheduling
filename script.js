@@ -328,6 +328,9 @@ function displayResults() {
 
     // create detailed calculations section
     displayDetailedCalculations();
+    
+    // create Gantt chart section
+    displayGanttChart();
 
     document.getElementById("results").style.display = "block";
 
@@ -434,6 +437,135 @@ function displayDetailedCalculations() {
     avgSection.appendChild(avgTATCalc);
     
     calculationsSection.appendChild(avgSection);
+}
+
+// function to display Gantt chart
+function displayGanttChart() {
+    // check if Gantt section already exists, if not create it
+    let ganttSection = document.getElementById("ganttChart");
+    if (!ganttSection) {
+        ganttSection = document.createElement("div");
+        ganttSection.id = "ganttChart";
+        ganttSection.className = "gantt-section";
+        
+        // Insert after detailed calculations section
+        const calculationsSection = document.getElementById("detailedCalculations");
+        calculationsSection.parentNode.insertBefore(ganttSection, calculationsSection.nextSibling);
+    }
+    
+    // clear existing content
+    ganttSection.innerHTML = "";
+    
+    // create title
+    const title = document.createElement("h3");
+    title.textContent = "Gantt Chart";
+    title.className = "gantt-title";
+    ganttSection.appendChild(title);
+    
+    // create chart container
+    const chartContainer = document.createElement("div");
+    chartContainer.className = "gantt-chart";
+    
+    // create timeline container
+    const timeline = document.createElement("div");
+    timeline.className = "gantt-timeline";
+    
+    // calculate total time for scaling
+    const totalTime = ganttChart.length > 0 ? ganttChart[ganttChart.length - 1].end : 0;
+    const maxWidth = 800; // Maximum width for the chart
+    const timeUnit = totalTime > 0 ? maxWidth / totalTime : 1;
+    
+    // unique colors for each process
+    const processColors = {};
+    const colors = ['#4299e1', '#48bb78', '#ed8936', '#9f7aea', '#38b2ac', '#e53e3e', '#d69e2e'];
+    let colorIndex = 0;
+    
+    processes.forEach(process => {
+        if (!processColors[process.pid]) {
+            processColors[process.pid] = colors[colorIndex % colors.length];
+            colorIndex++;
+        }
+    });
+    
+    // create blocks for each time segment
+    ganttChart.forEach((segment, index) => {
+        const block = document.createElement("div");
+        block.className = segment.pid === 'IDLE' ? "gantt-block idle" : "gantt-block process";
+        
+        // set width based on duration
+        const width = Math.max(segment.duration * timeUnit, 40); // Minimum width of 40px
+        block.style.width = `${width}px`;
+        
+        // Set color for process blocks
+        if (segment.pid !== 'IDLE') {
+            block.style.background = `linear-gradient(135deg, ${processColors[segment.pid]}, ${processColors[segment.pid]}dd)`;
+        }
+        
+        // add process ID text
+        block.textContent = segment.pid;
+        
+        // add time labels
+        const startLabel = document.createElement("div");
+        startLabel.className = "gantt-label";
+        startLabel.textContent = segment.start;
+        startLabel.style.left = "0px";
+        block.appendChild(startLabel);
+        
+        // add end time label to the last block or when time changes
+        if (index === ganttChart.length - 1 || ganttChart[index + 1].start !== segment.end) {
+            const endLabel = document.createElement("div");
+            endLabel.className = "gantt-label";
+            endLabel.textContent = segment.end;
+            endLabel.style.right = "-10px";
+            block.appendChild(endLabel);
+        }
+        
+        timeline.appendChild(block);
+    });
+    
+    chartContainer.appendChild(timeline);
+
+    // create legend
+    const legend = document.createElement("div");
+    legend.className = "gantt-legend";
+    
+    // add process legend items
+    processes.forEach(process => {
+        const legendItem = document.createElement("div");
+        legendItem.className = "gantt-legend-item";
+        
+        const colorBox = document.createElement("div");
+        colorBox.className = "gantt-legend-color";
+        colorBox.style.background = processColors[process.pid];
+        
+        const label = document.createElement("span");
+        label.textContent = `${process.pid} (BT: ${process.bt})`;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        legend.appendChild(legendItem);
+    });
+    
+    // add idle legend item if there are idle periods
+    if (ganttChart.some(segment => segment.pid === 'IDLE')) {
+        const idleLegendItem = document.createElement("div");
+        idleLegendItem.className = "gantt-legend-item";
+        
+        const colorBox = document.createElement("div");
+        colorBox.className = "gantt-legend-color";
+        colorBox.style.background = "linear-gradient(135deg, #e2e8f0, #cbd5e0)";
+        colorBox.style.border = "2px dashed #a0aec0";
+        
+        const label = document.createElement("span");
+        label.textContent = "CPU Idle";
+        
+        idleLegendItem.appendChild(colorBox);
+        idleLegendItem.appendChild(label);
+        legend.appendChild(idleLegendItem);
+    }
+    
+    chartContainer.appendChild(legend);
+    ganttSection.appendChild(chartContainer);
 }
 
 // function to reset the form and results
