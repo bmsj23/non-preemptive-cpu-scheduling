@@ -1,6 +1,7 @@
 let numProcesses = 0;
 let processes = [];
 let selectedAlgorithm = 'fcfs';
+let ganttChart = [];
 
 function setupProcesses() {
     const numInput = document.getElementById("numProcesses");
@@ -169,17 +170,40 @@ function calculateFCFS() {
     // sort by arrival time for FCFS scheduling
     processes.sort((a, b) => a.at - b.at);
 
+    // initialize Gantt chart data
+    ganttChart = [];
+    
     // calculate completion times
     let currentTime = 0;
 
     for (let i = 0; i < processes.length; i++) {
         // if current time is less than arrival time, wait
         if (currentTime < processes[i].at) {
+            // Add idle time to Gantt chart if there's a gap
+            if (currentTime < processes[i].at) {
+                ganttChart.push({
+                    pid: 'IDLE',
+                    start: currentTime,
+                    end: processes[i].at,
+                    duration: processes[i].at - currentTime
+                });
+            }
             currentTime = processes[i].at;
         }
 
+        // Record process execution in Gantt chart
+        const startTime = currentTime;
+        const endTime = currentTime + processes[i].bt;
+        
+        ganttChart.push({
+            pid: processes[i].pid,
+            start: startTime,
+            end: endTime,
+            duration: processes[i].bt
+        });
+
         // set completion time
-        processes[i].ct = currentTime + processes[i].bt;
+        processes[i].ct = endTime;
 
         // update current time
         currentTime = processes[i].ct;
@@ -192,6 +216,9 @@ function calculateFCFS() {
 
 // SJF (Shortest Job First) scheduling algorithm
 function calculateSJF() {
+    // initialize Gantt chart data
+    ganttChart = [];
+    
     // create arrays to track which processes are completed
     let completed = new Array(processes.length).fill(false);
     let currentTime = 0;
@@ -224,12 +251,34 @@ function calculateSJF() {
                     nextArrivalTime = processes[i].at;
                 }
             }
+            
+            // Add idle time to Gantt chart if there's a gap
+            if (currentTime < nextArrivalTime) {
+                ganttChart.push({
+                    pid: 'IDLE',
+                    start: currentTime,
+                    end: nextArrivalTime,
+                    duration: nextArrivalTime - currentTime
+                });
+            }
+            
             currentTime = nextArrivalTime;
             continue; // go back to find available process
         }
 
+        // Record process execution in Gantt chart
+        const startTime = currentTime;
+        const endTime = currentTime + processes[shortestIndex].bt;
+        
+        ganttChart.push({
+            pid: processes[shortestIndex].pid,
+            start: startTime,
+            end: endTime,
+            duration: processes[shortestIndex].bt
+        });
+
         // execute the selected process
-        processes[shortestIndex].ct = currentTime + processes[shortestIndex].bt;
+        processes[shortestIndex].ct = endTime;
         currentTime = processes[shortestIndex].ct;
 
         // calculate turnaround time and waiting time
